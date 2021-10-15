@@ -1,8 +1,8 @@
 --###############################
---# Project Name : 
---# File         : 
---# Project      : 
---# Engineer     : 
+--# Project Name : Placeholder_project_name
+--# File         : tb_i2cslave_write
+--# Project      : Placeholder_project
+--# Engineer     : JFO
 --# Modification History
 --###############################
 
@@ -48,6 +48,7 @@ architecture stimulus of TB_I2CSLAVE_WRITE is
 
 --
 	signal RUNNING	: std_logic := '1';
+	signal content : std_logic_vector(7 downto 0);
 
 begin
 
@@ -62,13 +63,13 @@ begin
 			SDA_OUT		=> SDA_OUT,
 			SCL_OUT		=> SCL_OUT,
 			ADDRESS		=> ADDRESS,
-			DATA_OUT		=> DATA_OUT,
+			DATA_OUT	=> DATA_OUT,
 			DATA_IN		=> DATA_IN,
-			WR		=> WR,
-			RD		=> RD
+			WR			=> WR,
+			RD			=> RD
 		);
 
---
+	-- Creates a 50 MHz clock
 	CLOCK: process
 	begin
 		while (RUNNING = '1') loop
@@ -85,6 +86,7 @@ begin
 			variable d : std_logic_vector(7 downto 0);
 		begin
 			d := data;
+			content <= data;
 			SCL_IN <= '0';
 			for i in 0 to 7 loop
 				SDA_IN <= d(7);
