@@ -1,9 +1,11 @@
 --###############################
---# Project Name : I2C slave
---# File         : i2cslave.vhd
---# Project      : i2c slave for FPGA
---# Engineer     : Philippe THIRION
+--# Project Name : Placeholder_project_name
+--# File         : i2cslave-arc.vhd
+--# Project      : Placeholder_project
+--# Engineer     : Jacob E. F. Overgaard
 --# Modification History
+--#		2021-10-15: Reformatted and changed ownership to Jacob E. F. Overgaard
+--#			Originally developed by Philipe Thirion.
 --###############################
 
 
@@ -30,49 +32,36 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity I2CSLAVE is
-	generic(
-		DEVICE 		: std_logic_vector(7 downto 0) := x"38"
-	);
-	port(
-		MCLK		: in	std_logic;
-		nRST		: in	std_logic;
-		SDA_IN		: in	std_logic;
-		SCL_IN		: in	std_logic;
-		SDA_OUT		: out	std_logic;
-		SCL_OUT		: out	std_logic;
-		ADDRESS		: out	std_logic_vector(7 downto 0);
-		DATA_OUT	: out	std_logic_vector(7 downto 0);
-		DATA_IN		: in	std_logic_vector(7 downto 0);
-		WR			: out	std_logic;
-		RD			: out	std_logic
-	);
-end I2CSLAVE;
-
 architecture rtl of I2CSLAVE is
 
+	-- type tstate is ( S_IDLE, S_START, S_SHIFTIN, S_RW, S_SENDACK, S_SENDACK2, S_SENDNACK,
+		-- S_ADDRESS, S_WRITE, S_SHIFTOUT, S_READ, S_WAITACK
+	-- );
 	type tstate is ( S_IDLE, S_START, S_SHIFTIN, S_RW, S_SENDACK, S_SENDACK2, S_SENDNACK,
 		S_ADDRESS, S_WRITE, S_SHIFTOUT, S_READ, S_WAITACK
 	);
 
 	type toperation is (OP_READ, OP_WRITE);
 	
-	signal state : tstate;
-	signal next_state : tstate;
-	signal operation : toperation;
+	signal state					: tstate;
+	signal next_state				: tstate;
+	signal operation				: toperation;
 
-	signal rising_scl, falling_scl : std_logic;
-	signal address_i : std_logic_vector(7 downto 0);
-	signal next_address : std_logic_vector(7 downto 0);
-	signal counter : integer range 0 to 7;
-	signal start_cond : std_logic;
-	signal stop_cond  : std_logic;
-	signal sda_q, sda_qq, sda_qqq : std_logic;
-	signal scl_q, scl_qq, scl_qqq : std_logic;
-	signal shiftreg : std_logic_vector(7 downto 0);
-	signal sda: std_logic;
-	signal address_incr : std_logic;
-	signal rd_d : std_logic;
+	signal rising_scl, falling_scl	: std_logic;
+	signal address_i				: std_logic_vector(7 downto 0);
+	signal next_address				: std_logic_vector(7 downto 0);
+	signal counter					: integer range 0 to 7;
+	signal start_cond				: std_logic;
+	signal stop_cond 				: std_logic;
+	signal sda_q, sda_qq, sda_qqq	: std_logic;
+	signal scl_q, scl_qq, scl_qqq	: std_logic;
+	signal shiftreg					: std_logic_vector(7 downto 0);
+	signal sda						: std_logic;
+	signal address_incr				: std_logic;
+	signal rd_d						: std_logic;
+
+	-- signal address_s				: std_logic_vector(7 downto 0) := x"00";
+	-- signal data_s					: std_logic_vector(7 downto 0) := x"00";
 begin
 
 	ADDRESS <= address_i;
@@ -150,6 +139,11 @@ begin
 			address_i <= (others=>'0');
 			DATA_OUT <= (others=>'0');
 			shiftreg <= (others=>'0');
+			data_o <= x"00";
+			address_o <= x"00";
+			packet_rdy_o <= '0';
+			data_o <= x"00";
+			address_o <= x"00";
 		elsif (MCLK'event and MCLK='1') then
 			if (stop_cond = '1') then
 				state <= S_IDLE;
@@ -175,6 +169,7 @@ begin
 				WR <= '0';
 				rd_d <= '0';
 				address_incr <= '0';
+				packet_rdy_o <= '0';
 			elsif(state = S_START) then
 				shiftreg <= (others=>'0');
 				state <= S_SHIFTIN;
@@ -197,9 +192,9 @@ begin
 						state <= S_SENDACK;
 						if (sda = '1') then
 							operation <= OP_READ;
-							-- next_state <= S_READ; -- no needed
 							rd_d <= '1';
 						else
+							-- Here we must do something with a counter.
 							operation <= OP_WRITE;
 							next_state <= S_ADDRESS;
 							address_incr <= '0';
@@ -237,13 +232,17 @@ begin
 				end if;
 			elsif(state = S_ADDRESS) then
 				address_i <= shiftreg;
+				address_o <= shiftreg;
 				next_state <= S_WRITE;
 				state <= S_SENDACK;
 				address_incr <= '0';
 			elsif(state = S_WRITE) then
 				DATA_OUT <= shiftreg;
-				next_state <= S_WRITE;
+				data_o <= shiftreg;
+				--next_state <= S_WRITE;
+				next_state <= S_IDLE;
 				state <= S_SENDACK;
+				packet_rdy_o <= '1';
 				WR <= '1';
 				address_incr <= '1';
 			elsif(state = S_SHIFTOUT) then
@@ -278,7 +277,6 @@ begin
 			end if;
 		end if;
 	end process OTO;
-					
 
 end rtl;
 

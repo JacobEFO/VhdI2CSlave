@@ -9,10 +9,10 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity TB_I2CSLAVE_WRITE is
-end TB_I2CSLAVE_WRITE;
+entity tb_i2cslave_write_reg_map is
+end tb_i2cslave_write_reg_map;
 
-architecture stimulus of TB_I2CSLAVE_WRITE is
+architecture stimulus of tb_i2cslave_write_reg_map is
 
 -- COMPONENTS --
 	component I2CSLAVE
@@ -35,6 +35,18 @@ architecture stimulus of TB_I2CSLAVE_WRITE is
 		);
 	end component;
 
+	component reg_map
+		port(
+			reset_nai       : in std_logic;
+			clk_i           : in std_logic;
+			rdy_i           : in std_logic;
+			address_i       : in std_logic_vector(7 downto 0);
+			data_i          : in std_logic_vector(7 downto 0);
+			gpio0_o         : out std_logic;
+			soft_reset_no   : out std_logic
+		);
+	end component;
+
 --
 -- SIGNALS --
 	signal MCLK			: std_logic;
@@ -51,6 +63,9 @@ architecture stimulus of TB_I2CSLAVE_WRITE is
 	signal packet_rdy_s	: std_logic;
 	signal data_s		: std_logic_vector(7 downto 0);
 	signal address_s	: std_logic_vector(7 downto 0);
+
+	signal soft_reset_ns	: std_logic;
+	signal gpio0_s			: std_logic;
 
 --
 	signal RUNNING	: std_logic := '1';
@@ -76,6 +91,17 @@ begin
 			packet_rdy_o	=> packet_rdy_s,
 			data_o			=> data_s,
 			address_o		=> address_s
+		);
+
+	i_reg_map_o : reg_map
+		port map (
+			reset_nai       => nRST,
+			clk_i           => MCLK,
+			rdy_i           => WR,
+			address_i       => address_s,
+			data_i          => data_s,
+			gpio0_o         => gpio0_s,
+			soft_reset_no   => soft_reset_ns
 		);
 
 	-- Creates a 50 MHz clock
