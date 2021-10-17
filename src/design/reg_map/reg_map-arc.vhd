@@ -1,6 +1,6 @@
 --###############################
 --# Project Name : Placeholder_project_name
---# File         : reg_map.vhd
+--# File         : reg_map-ent.vhd
 --# Project      : Placeholder_project
 --# Engineer     : Jacob E. F. Overgaard
 --# Modification History

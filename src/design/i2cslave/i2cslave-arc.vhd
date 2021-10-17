@@ -32,11 +32,8 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-architecture rtl of I2CSLAVE is
+architecture rtl of i2c_slave is
 
-	-- type tstate is ( S_IDLE, S_START, S_SHIFTIN, S_RW, S_SENDACK, S_SENDACK2, S_SENDNACK,
-		-- S_ADDRESS, S_WRITE, S_SHIFTOUT, S_READ, S_WAITACK
-	-- );
 	type tstate is ( S_IDLE, S_START, S_SHIFTIN, S_RW, S_SENDACK, S_SENDACK2, S_SENDNACK,
 		S_ADDRESS, S_WRITE, S_SHIFTOUT, S_READ, S_WAITACK
 	);
@@ -60,113 +57,111 @@ architecture rtl of I2CSLAVE is
 	signal address_incr				: std_logic;
 	signal rd_d						: std_logic;
 
-	-- signal address_s				: std_logic_vector(7 downto 0) := x"00";
-	-- signal data_s					: std_logic_vector(7 downto 0) := x"00";
 begin
 
-	ADDRESS <= address_i;
+	address <= address_i;
 	
 	next_address <= (others=>'0') when (address_i = x"FF") else
 		std_logic_vector(to_unsigned(to_integer(unsigned( address_i )) + 1, 8));
 	
-	S_RSY: process(MCLK,nRST)
+	sys_rst: process(clk_i,rst_nai)
 	begin
-		if (nRST = '0') then
+		if (rst_nai = '0') then
 			sda_q <= '1';
 			sda_qq <= '1';
 			sda_qqq <= '1';
 			scl_q <= '1';
 			scl_qq <= '1';
 			scl_qqq <= '1';
-		elsif (MCLK'event and MCLK='1') then
-			sda_q <= SDA_IN;
+		elsif (clk_i'event and clk_i='1') then
+			sda_q <= sda_i;
 			sda_qq <= sda_q;
 			sda_qqq <= sda_qq;
-			scl_q <= SCL_IN;
+			scl_q <= scl_i;
 			scl_qq <= scl_q;
 			scl_qqq <= scl_qq;
 		end if;
-	end process S_RSY;
+	end process sys_rst;
 
 	rising_scl <= scl_qq and not scl_qqq;
 	falling_scl <= not scl_qq and scl_qqq;
 		
-	START_BIT: process(MCLK,nRST)
+	start_bit: process(clk_i, rst_nai)
 	begin
-		if (nRST = '0') then
+		if (rst_nai = '0') then
 			start_cond <= '0';
-		elsif (MCLK'event and MCLK='1') then
+		elsif (clk_i'event and clk_i='1') then
 			if (sda_qqq = '1' and sda_qq = '0' and scl_qq = '1') then
 				start_cond <= '1';
 			else	
 				start_cond <= '0';
 			end if;
 		end if;
-	end process START_BIT;
+	end process start_bit;
 	
-	STOP_BIT: process(MCLK,nRST)
+	stop_bit: process(clk_i, rst_nai)
 	begin
-		if (nRST = '0') then
+		if (rst_nai = '0') then
 			stop_cond <= '0';
-		elsif (MCLK'event and MCLK='1') then
+		elsif (clk_i'event and clk_i = '1') then
 			if (sda_qqq = '0' and sda_qq = '1' and scl_qq = '1') then
 				stop_cond <= '1';
 			else	
 				stop_cond <= '0';
 			end if;
 		end if;
-	end process STOP_BIT;
+	end process stop_bit;
 	
 	sda <= sda_qq;
 	
-	RD_DELAY: process(MCLK, nRST)
+	rd_delay: process(clk_i, rst_nai)
 	begin
-		if (nRST = '0') then
-			RD <= '0';
-		elsif (MCLK'event and MCLK='1') then
-			RD <= rd_d;
+		if (rst_nai = '0') then
+			rd <= '0';
+		elsif (clk_i'event and clk_i='1') then
+			rd <= rd_d;
 		end if;
-	end process RD_DELAY;
+	end process rd_delay;
 
-	OTO: process(MCLK, nRST)
+	OTO: process(clk_i, rst_nai)
 	begin
-		if (nRST = '0') then
+		if (rst_nai = '0') then
 			state <= S_IDLE;
-			SDA_OUT <= '1';
-			SCL_OUT <= '1';
-			WR <= '0';
+			sda_o <= '1';
+			scl_o <= '1';
+			wr <= '0';
 			rd_d <= '0';
 			address_i <= (others=>'0');
-			DATA_OUT <= (others=>'0');
+			data_out <= (others=>'0');
 			shiftreg <= (others=>'0');
 			data_o <= x"00";
 			address_o <= x"00";
 			packet_rdy_o <= '0';
 			data_o <= x"00";
 			address_o <= x"00";
-		elsif (MCLK'event and MCLK='1') then
+		elsif (clk_i'event and clk_i='1') then
 			if (stop_cond = '1') then
 				state <= S_IDLE;
-				SDA_OUT <= '1';
-				SCL_OUT <= '1';
+				sda_o <= '1';
+				scl_o <= '1';
 				operation <= OP_READ;
-				WR <= '0';
+				wr <= '0';
 				rd_d <= '0';
 				address_incr <= '0';
 			elsif(start_cond = '1') then
 				state <= S_START;
-				SDA_OUT <= '1';
-				SCL_OUT <= '1';
+				sda_o <= '1';
+				scl_o <= '1';
 				operation <= OP_READ;
-				WR <= '0';
+				wr <= '0';
 				rd_d <= '0';
 				address_incr <= '0';
 			elsif(state = S_IDLE) then
 				state <= S_IDLE;
-				SDA_OUT <= '1';
-				SCL_OUT <= '1';
+				sda_o <= '1';
+				scl_o <= '1';
 				operation <= OP_READ;
-				WR <= '0';
+				wr <= '0';
 				rd_d <= '0';
 				address_incr <= '0';
 				packet_rdy_o <= '0';
@@ -194,7 +189,6 @@ begin
 							operation <= OP_READ;
 							rd_d <= '1';
 						else
-							-- Here we must do something with a counter.
 							operation <= OP_WRITE;
 							next_state <= S_ADDRESS;
 							address_incr <= '0';
@@ -204,21 +198,21 @@ begin
 					end if;
 				end if;
 			elsif(state = S_SENDACK) then
-				WR <= '0';
+				wr <= '0';
 				rd_d <= '0';
 				if (falling_scl = '1') then
-					SDA_OUT <= '0';
+					sda_o <= '0';
 					counter <= 7;
 					if (operation= OP_WRITE) then
 						state <= S_SENDACK2;
 					else -- OP_READ
 						state <= S_SHIFTOUT;
-						shiftreg <= DATA_IN;
+						shiftreg <= data_in;
 					end if;
 				end if;
 			elsif(state = S_SENDACK2) then
 				if (falling_scl = '1') then
-					SDA_OUT <= '1';
+					sda_o <= '1';
 					state <= S_SHIFTIN;
 					shiftreg <= (others=>'0');
 					if (address_incr = '1') then
@@ -227,7 +221,7 @@ begin
 				end if;
 			elsif(state = S_SENDNACK) then
 				if (falling_scl = '1') then
-					SDA_OUT <= '1';
+					sda_o <= '1';
 					state <= S_IDLE;
 				end if;
 			elsif(state = S_ADDRESS) then
@@ -237,17 +231,16 @@ begin
 				state <= S_SENDACK;
 				address_incr <= '0';
 			elsif(state = S_WRITE) then
-				DATA_OUT <= shiftreg;
+				data_out <= shiftreg;
 				data_o <= shiftreg;
-				--next_state <= S_WRITE;
 				next_state <= S_IDLE;
 				state <= S_SENDACK;
 				packet_rdy_o <= '1';
-				WR <= '1';
+				wr <= '1';
 				address_incr <= '1';
 			elsif(state = S_SHIFTOUT) then
 				if (falling_scl = '1') then
-					SDA_OUT <= shiftreg(7);
+					sda_o <= shiftreg(7);
 					shiftreg(7 downto 1) <= shiftreg(6 downto 0);
 					shiftreg(0) <= '1';
 					if (counter = 0) then
@@ -261,7 +254,7 @@ begin
 			elsif(state = S_READ) then
 				rd_d <= '0';
 				if (falling_scl = '1') then
-					SDA_OUT <= '1';
+					sda_o <= '1';
 					state <= S_WAITACK;
 				end if;
 			elsif(state = S_WAITACK) then
@@ -269,7 +262,7 @@ begin
 					if (sda = '0') then
 						state <= S_SHIFTOUT;
 						counter <= 7;
-						shiftreg <= DATA_IN;
+						shiftreg <= data_in;
 					else
 						state <= S_IDLE;
 					end if;

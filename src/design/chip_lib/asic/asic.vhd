@@ -26,12 +26,14 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+library obj
+use comp_i2c_slave
+
 entity chip_asic is
-    I2C_SDA     : in std_logic;
-    I2C_SCL     : in std_logic;
+    I2C_SDA     : inout std_logic;
+    I2C_SCL     : inout std_logic;
     PORRSTN     : inout std_logic;
     GPIO0       : inout std_logic;
-
 end chip_asic;
 
 architecture rtl of chip_asic is:
@@ -42,7 +44,9 @@ architecture rtl of chip_asic is:
 l
 
     -- Signals for I2C slave
-	signal MCLK			: std_logic;
+	signal sys_clk_s	: std_logic;
+
+
 	--signal nRST			: std_logic; -- Use reset_s instead
 	signal SDA_IN		: std_logic;
 	signal SCL_IN		: std_logic;t
@@ -54,33 +58,6 @@ l
 	signal WR			: std_logic;
 	signal RD			: std_logic;
 
-    component reg_map
-        port(
-            reset_nai       : in std_logic;
-            clk_i           : in std_logic;
-            address_i       : in std_logic_vector(7 downto 0);
-            data_i          : in std_logic_vector(7 downto 0);
-            gpio0_o         : out std_logic;
-            soft_reset_no   : out std_logic
-        );
-    end component;
-
-	component I2CSLAVE
-		generic( DEVICE: std_logic_vector(7 downto 0));
-		port(
-			MCLK		: in	std_logic;
-			nRST		: in	std_logic;
-			SDA_IN		: in	std_logic;
-			SCL_IN		: in	std_logic;
-			SDA_OUT		: out	std_logic;
-			SCL_OUT		: out	std_logic;
-			ADDRESS		: out	std_logic_vector(7 downto 0);
-			DATA_OUT	: out	std_logic_vector(7 downto 0);
-			DATA_IN		: in	std_logic_vector(7 downto 0);
-			WR			: out	std_logic;
-			RD			: out	std_logic
-		);
-	end component;
 
 begin
 

@@ -1,9 +1,10 @@
 --###############################
 --# Project Name : Placeholder_project_name
---# File         : reg_map-ent.vhd
+--# File         : asic.vhd
 --# Project      : Placeholder_project
 --# Engineer     : Jacob E. F. Overgaard
 --# Modification History
+--#     2021-10-15: Creation date.
 --###############################
 
 --    Copyright 2021 Jacob E. F. Overgaard
@@ -25,14 +26,46 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity reg_map is
-    port (
-        reset_nai       : in std_logic;
-        clk_i           : in std_logic;
-        rdy_i           : in std_logic;
-        address_i       : in std_logic_vector(7 downto 0);
-        data_i          : in std_logic_vector(7 downto 0);
-        gpio0_o         : out std_logic;
-        soft_reset_no   : out std_logic
-    );
-end reg_map;
+library obj;
+use obj.comp_i2c_slave.i2c_slave;
+
+entity chip_asic is
+	port(
+		I2C_SDA     : inout std_logic;
+		I2C_SCL     : inout std_logic;
+		PORRSTN     : inout std_logic;
+		GPIO0       : inout std_logic
+	);
+end chip_asic;
+
+architecture rtl of chip_asic is
+-- Signals for full chip
+	signal sys_clk_s	: std_logic;
+	signal reset_ns		: std_logic;
+
+-- Signals for register map
+    signal gpio0_s      : std_logic;
+    signal reset_ns     : std_logic;
+
+-- Signals for I2C slave
+	signal scl_s		: std_logic;
+	signal sda_s		: std_logic;
+	signal sda_o_s		: std_logic;
+	signal scl_o_s		: std_logic;
+	signal i2c_wr_s		: std_logic;
+	signal i2c_rd_s		: std_logic;
+
+	-- These need an update
+	signal address		: std_logic_vector(7 downto 0);
+	signal data_out		: std_logic_vector(7 downto 0);
+	signal data_in		: std_logic_vector(7 downto 0);
+
+
+begin
+-- Map chip-pins to internal signals
+	reset_ns <= PORRSTN;
+
+	scl_s <= I2C_SCL;
+	sda_s <= I2C_SDA;
+
+end rtl;
