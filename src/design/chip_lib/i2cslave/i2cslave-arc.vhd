@@ -4,10 +4,13 @@
 --# Project      : Placeholder_project
 --# Engineer     : Jacob E. F. Overgaard
 --# Modification History
+--#		2021-10-17: 
+--#			- Moved entity into architecture file. Having three files
+--#			  for each module is obsesive and cluttering.
+--#			- Removed 'data_out' and uses 'data_o' instead.
 --#		2021-10-15: Reformatted and changed ownership to Jacob E. F. Overgaard
 --#			Originally developed by Philipe Thirion.
 --###############################
-
 
 --	copyright Philippe Thirion
 --	github.com/tirfil
@@ -31,6 +34,27 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+
+entity i2c_slave is
+	-- TODO(Jacob) Update this so device address is read from a uniform file.
+	generic(
+		device 			: std_logic_vector(7 downto 0) := x"38"	-- Device I2C 7-bit address
+	);
+	port(
+		clk_i			: in	std_logic;
+		rst_nai			: in	std_logic;
+		sda_i			: in	std_logic;
+		scl_i			: in	std_logic;
+		sda_o			: out	std_logic;
+		scl_o			: out	std_logic;
+		address			: out	std_logic_vector(7 downto 0);	-- No idea what this is for
+		data_in			: in	std_logic_vector(7 downto 0);	-- No idea what this is for
+		wr				: out	std_logic;
+		rd				: out	std_logic;
+		data_o			: out	std_logic_vector(7 downto 0);
+		address_o		: out	std_logic_vector(7 downto 0)
+	);
+end i2c_slave;
 
 architecture rtl of i2c_slave is
 
@@ -132,11 +156,7 @@ begin
 			wr <= '0';
 			rd_d <= '0';
 			address_i <= (others=>'0');
-			data_out <= (others=>'0');
 			shiftreg <= (others=>'0');
-			data_o <= x"00";
-			address_o <= x"00";
-			packet_rdy_o <= '0';
 			data_o <= x"00";
 			address_o <= x"00";
 		elsif (clk_i'event and clk_i='1') then
@@ -164,7 +184,6 @@ begin
 				wr <= '0';
 				rd_d <= '0';
 				address_incr <= '0';
-				packet_rdy_o <= '0';
 			elsif(state = S_START) then
 				shiftreg <= (others=>'0');
 				state <= S_SHIFTIN;
@@ -231,11 +250,9 @@ begin
 				state <= S_SENDACK;
 				address_incr <= '0';
 			elsif(state = S_WRITE) then
-				data_out <= shiftreg;
 				data_o <= shiftreg;
 				next_state <= S_IDLE;
 				state <= S_SENDACK;
-				packet_rdy_o <= '1';
 				wr <= '1';
 				address_incr <= '1';
 			elsif(state = S_SHIFTOUT) then

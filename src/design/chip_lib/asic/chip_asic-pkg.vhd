@@ -1,18 +1,13 @@
 --###############################
 --# Project Name : Placeholder_project_name
---# File         : i2cslave-ent.vhd
+--# File         : chip_asic-pkd.vhd
 --# Project      : Placeholder_project
 --# Engineer     : Jacob E. F. Overgaard
 --# Modification History
---#		2021-10-15: Reformatted and changed ownership to Jacob E. F. Overgaard
---#			Originally developed by Philipe Thirion.
+--#     2021-10-17: Creation date.
 --###############################
 
-
---	copyright Philippe Thirion
---	github.com/tirfil
---
---    Copyright 2016 Philippe THIRION
+--    Copyright 2021 Jacob E. F. Overgaard
 --
 --    This program is free software: you can redistribute it and/or modify
 --    it under the terms of the GNU General Public License as published by
@@ -27,29 +22,18 @@
 --    You should have received a copy of the GNU General Public License
 --    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity i2c_slave is
-	generic(
-		device 		: std_logic_vector(7 downto 0) := x"38"	-- Device I2C 7-bit address
-	);
-	port(
-		clk_i			: in	std_logic;
-		rst_nai			: in	std_logic;
-		sda_i			: in	std_logic;
-		scl_i			: in	std_logic;
-		sda_o			: out	std_logic;
-		scl_o			: out	std_logic;
-		address			: out	std_logic_vector(7 downto 0);	-- No idea what this is for
-		data_out		: out	std_logic_vector(7 downto 0);	-- No idea what this is for
-		data_in			: in	std_logic_vector(7 downto 0);	-- No idae what this is for
-		wr				: out	std_logic;
-		rd				: out	std_logic;
-		packet_rdy_o	: out	std_logic;
-		data_o			: out	std_logic_vector(7 downto 0);
-		address_o		: out	std_logic_vector(7 downto 0)
-	);
-end i2c_slave;
+package comp_chip_asic is
+	component chip_asic
+		port(
+			I2C_SDA     : inout std_logic;
+			I2C_SCL     : inout std_logic;
+			PORRSTN     : inout std_logic;
+			GPIO0       : inout std_logic;
+			SYS_CLK		: inout std_logic	-- This shall be removed at some point
+		);
+	end component;
+	end package comp_chip_asic;
