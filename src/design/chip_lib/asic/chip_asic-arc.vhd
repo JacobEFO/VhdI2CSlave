@@ -61,6 +61,7 @@ architecture rtl of chip_asic is
 	signal i2c_wr_s			: std_logic;
 	signal i2c_rd_s			: std_logic;
 	signal i2c_data_o_s		: std_logic_vector(7 downto 0);
+	signal i2c_data_i_s		: std_logic_vector(7 downto 0);
 	signal i2c_address_s	: std_logic_vector(7 downto 0);
 
 	-- These need an update
@@ -91,6 +92,7 @@ begin
 			wr				=> i2c_wr_s,
 			rd				=> i2c_rd_s,
 			data_o			=> i2c_data_o_s,
+			data_i			=> i2c_data_i_s,
 			address_o		=> i2c_address_s
 		);
 
@@ -99,9 +101,11 @@ begin
 		port map (
 			rst_nai       	=> rst_ns,
 			clk_i           => sys_clk_s,
-			rdy_i           => i2c_wr_s,
+			reg_map_wr		=> i2c_wr_s,
+			reg_map_rd		=> i2c_rd_s,
 			address_i       => i2c_address_s,
 			data_i          => i2c_data_o_s,
+			data_o          => i2c_data_i_s,
 			gpio0_o         => gpio0_s,
 			soft_rst_o   	=> soft_rst_s
 		);

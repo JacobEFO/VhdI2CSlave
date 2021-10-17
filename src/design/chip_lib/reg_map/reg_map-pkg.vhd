@@ -4,6 +4,9 @@
 --# Project      : Placeholder_project
 --# Engineer     : Jacob E. F. Overgaard
 --# Modification History
+--#     2021-10-17:
+--#         - Added port 'data_o' and 'reg_map_rd'.
+--#         - Renamed port 'rdy_i' to 'reg_map_wr'.
 --###############################
 
 --    Copyright 2021 Jacob E. F. Overgaard
@@ -28,13 +31,15 @@ use IEEE.numeric_std.all;
 package comp_reg_map is
     component reg_map
         port (
-            rst_nai         : in std_logic;
-            clk_i           : in std_logic;
-            rdy_i           : in std_logic;
-            address_i       : in std_logic_vector(7 downto 0);
-            data_i          : in std_logic_vector(7 downto 0);
-            gpio0_o         : out std_logic;
-            soft_rst_o     : out std_logic
+            rst_nai         : in    std_logic;
+            clk_i           : in    std_logic;
+            reg_map_wr      : in    std_logic;
+            reg_map_rd      : in    std_logic;
+            address_i       : in    std_logic_vector(7 downto 0);
+            data_i          : in    std_logic_vector(7 downto 0);
+            data_o          : out   std_logic_vector(7 downto 0);
+            gpio0_o         : out   std_logic;
+            soft_rst_o      : out   std_logic
         );
     end component;
 end package comp_reg_map;

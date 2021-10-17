@@ -6,6 +6,7 @@
 --# Modification History
 --#		2021-10-17: 
 --#			- Removed 'data_out'.
+--#			- Added 'data_i' for reg_map incoming data.
 --#		2021-10-16: Created.
 --###############################
 
@@ -43,6 +44,7 @@ package comp_i2c_slave is
 			wr				: out	std_logic;
 			rd				: out	std_logic;
 			data_o			: out	std_logic_vector(7 downto 0);
+			data_i			: in	std_logic_vector(7 downto 0);
 			address_o		: out	std_logic_vector(7 downto 0)
 		);
 	end component;

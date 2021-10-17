@@ -4,8 +4,11 @@
 --# Project      : Placeholder_project
 --# Engineer     : Jacob E. F. Overgaard
 --# Modification History
---#		2021-10-17: Moved entity into architecture file. Having three files
---#			for each module is obsesive and cluttering.
+--#		2021-10-17:
+--#         - Moved entity into architecture file. Having three files
+--#			  for each module is obsesive and cluttering.
+--#         - Added port 'data_o' and 'reg_map_rd'.
+--#         - Renamed port 'rdy_i' to 'reg_map_wr'.
 --###############################
 
 --    Copyright 2021 Jacob E. F. Overgaard
@@ -29,13 +32,15 @@ use IEEE.numeric_std.all;
 
 entity reg_map is
     port (
-        rst_nai         : in std_logic;
-        clk_i           : in std_logic;
-        rdy_i           : in std_logic;
-        address_i       : in std_logic_vector(7 downto 0);
-        data_i          : in std_logic_vector(7 downto 0);
-        gpio0_o         : out std_logic;
-        soft_rst_o     : out std_logic
+        rst_nai         : in    std_logic;
+        clk_i           : in    std_logic;
+        reg_map_wr      : in    std_logic;
+        reg_map_rd      : in    std_logic;
+        address_i       : in    std_logic_vector(7 downto 0);
+        data_i          : in    std_logic_vector(7 downto 0);
+        data_o          : out   std_logic_vector(7 downto 0);
+        gpio0_o         : out   std_logic;
+        soft_rst_o      : out   std_logic
     );
 end reg_map;
 
@@ -62,7 +67,7 @@ begin
         end if;
 
         if (falling_edge(clk_i)) then
-            if rdy_i = '1' then
+            if reg_map_wr = '1' then
                 case address_i is
                     when x"01"      => soft_reset <= data_i;
                     when x"02"      => gpio0_ctrl <= data_i;

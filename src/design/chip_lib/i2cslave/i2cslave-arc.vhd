@@ -8,6 +8,7 @@
 --#			- Moved entity into architecture file. Having three files
 --#			  for each module is obsesive and cluttering.
 --#			- Removed 'data_out' and uses 'data_o' instead.
+--#			- Added 'data_i' for reg_map incoming data.
 --#		2021-10-15: Reformatted and changed ownership to Jacob E. F. Overgaard
 --#			Originally developed by Philipe Thirion.
 --###############################
@@ -51,7 +52,8 @@ entity i2c_slave is
 		data_in			: in	std_logic_vector(7 downto 0);	-- No idea what this is for
 		wr				: out	std_logic;
 		rd				: out	std_logic;
-		data_o			: out	std_logic_vector(7 downto 0);
+		data_o			: out	std_logic_vector(7 downto 0);	-- Data going to reg_map
+		data_i			: in	std_logic_vector(7 downto 0);	-- Data coming from reg_map
 		address_o		: out	std_logic_vector(7 downto 0)
 	);
 end i2c_slave;

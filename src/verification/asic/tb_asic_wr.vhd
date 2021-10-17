@@ -109,17 +109,28 @@ begin
 		send_data(x"02"); -- address
 		send_data(x"FF"); -- payload
 		stop_cond;
-		wait for 10 us;
+		wait for 50 ns;
 		start_cond;
 		send_data(x"70"); -- 38 < 1 + write
 		send_data(x"01"); -- address
 		send_data(x"FF"); -- payload
 		stop_cond;
-		wait for 10 us;
+		wait for 50 ns;
 		start_cond;
+		send_data(x"70"); -- 38 < 1 + write
+		send_data(x"02"); -- address
+		send_data(x"00"); -- payload
+		stop_cond;
+		wait for 50 ns;
+		start_cond; -- Start writing to an unknown device.
 		send_data(x"22");
 		send_data(x"01");
 		send_data(x"00");
+		stop_cond;
+		wait for 50 ns;
+		start_cond; -- Start writing to an unknown device.
+		send_data(x"71"); -- 38 < 1 + read
+		send_data(x"01");
 		stop_cond;
 		wait for 80 ns;
 		running <= '0';
